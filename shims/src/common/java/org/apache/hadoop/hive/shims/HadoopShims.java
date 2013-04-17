@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.shims;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
@@ -64,6 +65,17 @@ public interface HadoopShims {
    * command line interpretation.
    */
   boolean usesJobShell();
+
+  /**
+   * Constructs and Returns TaskAttempt Log Url
+   * or null if the TaskLogServlet is not available
+   *
+   *  @return TaskAttempt Log Url
+   */
+  String getTaskAttemptLogUrl(JobConf conf,
+    String taskTrackerHttpAddress,
+    String taskAttemptId)
+    throws MalformedURLException;
 
   /**
    * Return true if the job has not switched to RUNNING state yet
@@ -163,6 +175,9 @@ public interface HadoopShims {
    * In secure versions of Hadoop, this simply returns the current
    * access control context's user, ignoring the configuration.
    */
+
+  public void closeAllForUGI(UserGroupInformation ugi);
+
   public UserGroupInformation getUGIForConf(Configuration conf) throws LoginException, IOException;
 
   /**
@@ -231,9 +246,69 @@ public interface HadoopShims {
   public JobContext newJobContext(Job job);
 
   /**
-   * InputSplitShim.
-   *
+   * Check wether MR is configured to run in local-mode
+   * @param conf
+   * @return
    */
+  public boolean isLocalMode(Configuration conf);
+
+  /**
+   * All retrieval of jobtracker/resource manager rpc address
+   * in the configuration should be done through this shim
+   * @param conf
+   * @return
+   */
+  public String getJobLauncherRpcAddress(Configuration conf);
+
+  /**
+   * All updates to jobtracker/resource manager rpc address
+   * in the configuration should be done through this shim
+   * @param conf
+   * @return
+   */
+  public void setJobLauncherRpcAddress(Configuration conf, String val);
+
+  /**
+   * All references to jobtracker/resource manager http address
+   * in the configuration should be done through this shim
+   * @param conf
+   * @return
+   */
+  public String getJobLauncherHttpAddress(Configuration conf);
+  
+  /**
+   * Get the default block size for the path. FileSystem alone is not sufficient to
+   * determine the same, as in case of CSMT the underlying file system determines that.
+   * @param fs
+   * @param path
+   * @return
+   */
+  public long getDefaultBlockSize(FileSystem fs, Path path);
+
+  /**
+   * Get the default replication for a path. In case of CSMT the given path will be used to
+   * locate the actual filesystem.
+   * @param fs
+   * @param path
+   * @return
+   */
+  public short getDefaultReplication(FileSystem fs, Path path);
+  /**
+   * Move the directory/file to trash. In case of the symlinks or mount points, the file is
+   * moved to the trashbin in the actual volume of the path p being deleted
+   * @param fs
+   * @param path
+   * @param conf
+   * @return false if the item is already in the trash or trash is disabled
+   * @throws IOException
+   */
+  public boolean moveToAppropriateTrash(FileSystem fs, Path path, Configuration conf)
+          throws IOException;
+
+ /**
+  * InputSplitShim.
+  *
+  */
   public interface InputSplitShim extends InputSplit {
     JobConf getJob();
 

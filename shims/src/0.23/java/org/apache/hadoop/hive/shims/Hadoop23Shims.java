@@ -17,20 +17,46 @@
  */
 package org.apache.hadoop.hive.shims;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hive.shims.HadoopShims.JobTrackerState;
-import org.apache.hadoop.hive.shims.HadoopShimsSecure;
 import org.apache.hadoop.mapred.ClusterStatus;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
+import org.apache.hadoop.mapreduce.util.HostUtil;
 import org.apache.hadoop.util.Progressable;
 
 /**
  * Implemention of shims against Hadoop 0.23.0.
  */
 public class Hadoop23Shims extends HadoopShimsSecure {
+
+  @Override
+  public String getTaskAttemptLogUrl(JobConf conf,
+    String taskTrackerHttpAddress, String taskAttemptId)
+    throws MalformedURLException {
+    if (conf.get("mapreduce.framework.name") != null
+      && conf.get("mapreduce.framework.name").equals("yarn")) {
+      // if the cluster is running in MR2 mode, return null
+      //LOG.warn("Can't fetch tasklog: TaskLogServlet is not supported in MR2 mode.");
+      return null;
+    } else {
+      // if the cluster is running in MR1 mode, using HostUtil to construct TaskLogURL
+      URL taskTrackerHttpURL = new URL(taskTrackerHttpAddress);
+      return HostUtil.getTaskLogUrl(taskTrackerHttpURL.getHost(),
+        Integer.toString(taskTrackerHttpURL.getPort()),
+        taskAttemptId);
+    }
+  }
 
   @Override
   public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception {
@@ -59,5 +85,49 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public org.apache.hadoop.mapreduce.JobContext newJobContext(Job job) {
     return new JobContextImpl(job.getConfiguration(), job.getJobID());
+  }
+
+  @Override
+  public boolean isLocalMode(Configuration conf) {
+    return "local".equals(conf.get("mapreduce.framework.name"));
+  }
+
+  @Override
+  public String getJobLauncherRpcAddress(Configuration conf) {
+    return conf.get("yarn.resourcemanager.address");
+  }
+
+  @Override
+  public void setJobLauncherRpcAddress(Configuration conf, String val) {
+    if (val.equals("local")) {
+      // LocalClientProtocolProvider expects both parameters to be 'local'.
+      conf.set("mapreduce.framework.name", val);
+      conf.set("mapreduce.jobtracker.address", val);
+    }
+    else {
+      conf.set("mapreduce.framework.name", "yarn");
+      conf.set("yarn.resourcemanager.address", val);
+    }
+  }
+
+  @Override
+  public String getJobLauncherHttpAddress(Configuration conf) {
+    return conf.get("yarn.resourcemanager.webapp.address");
+  }
+
+  @Override
+  public long getDefaultBlockSize(FileSystem fs, Path path) {
+    return fs.getDefaultBlockSize(path);
+  }
+
+  @Override
+  public short getDefaultReplication(FileSystem fs, Path path) {
+    return fs.getDefaultReplication(path);
+  }
+
+  @Override
+  public boolean moveToAppropriateTrash(FileSystem fs, Path path, Configuration conf)
+          throws IOException {
+    return Trash.moveToAppropriateTrash(fs, path, conf);
   }
 }

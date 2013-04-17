@@ -423,10 +423,9 @@ public class HadoopJobExecHelper {
    * from StreamJob.java.
    */
   public void jobInfo(RunningJob rj) {
-    if (job.get("mapred.job.tracker", "local").equals("local")) {
+    if (ShimLoader.getHadoopShims().isLocalMode(job)) {
       console.printInfo("Job running in-process (local Hadoop)");
     } else {
-      String hp = job.get("mapred.job.tracker");
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().setTaskProperty(SessionState.get().getQueryId(),
             getId(), Keys.TASK_HADOOP_ID, rj.getJobID());
@@ -434,7 +433,7 @@ public class HadoopJobExecHelper {
       console.printInfo(getJobStartMsg(rj.getJobID()) + ", Tracking URL = "
           + rj.getTrackingURL());
       console.printInfo("Kill Command = " + HiveConf.getVar(job, HiveConf.ConfVars.HADOOPBIN)
-          + " job  -Dmapred.job.tracker=" + hp + " -kill " + rj.getJobID());
+          + " job  -kill " + rj.getJobID());
     }
   }
 
@@ -542,7 +541,11 @@ public class HadoopJobExecHelper {
         }
         // These tasks should have come from the same job.
         assert (ti.getJobId() != null && ti.getJobId().equals(jobId));
-        ti.getLogUrls().add(getTaskAttemptLogUrl(t.getTaskTrackerHttp(), t.getTaskId()));
+        String taskAttemptLogUrl = ShimLoader.getHadoopShims().getTaskAttemptLogUrl(
+                conf, t.getTaskTrackerHttp(), t.getTaskId());
+        if (taskAttemptLogUrl != null) {
+            ti.getLogUrls().add(taskAttemptLogUrl);
+        }
 
         // If a task failed, then keep track of the total number of failures
         // for that task (typically, a task gets re-run up to 4 times if it
