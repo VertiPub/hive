@@ -512,7 +512,7 @@
         inheritAll="false"/>
     <mkdir dir="${target.dir}/hcatalog"/>
     <copy todir="${target.dir}/hcatalog">
-        <fileset dir="${hive.root}/hcatalog/build/hcatalog-${version}"/>
+        <fileset dir="${hive.root}/hcatalog/build/hcatalog-${hive.version}"/>
     </copy>
   </target>
 
