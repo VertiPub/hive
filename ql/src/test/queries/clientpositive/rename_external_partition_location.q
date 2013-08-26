@@ -1,5 +1,5 @@
 
-dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/ex_table;
+dfs -mkdir ${system:test.tmp.dir}/ex_table;
 
 CREATE EXTERNAL TABLE ex_table ( key INT, value STRING)
     PARTITIONED BY (part STRING)
