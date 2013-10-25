@@ -92,7 +92,8 @@ public class SQLOperation extends ExecuteStatementOperation {
       driver.setTryCount(Integer.MAX_VALUE);
 
       String subStatement = new VariableSubstitution().substitute(sqlOperationConf, statement);
-      response = driver.compileAndRespond(subStatement);
+
+      response = driver.run(subStatement);
       if (0 != response.getResponseCode()) {
         throw new HiveSQLException("Error while compiling statement: "
             + response.getErrorMessage(), response.getSQLState(), response.getResponseCode());
@@ -158,7 +159,7 @@ public class SQLOperation extends ExecuteStatementOperation {
     setState(OperationState.PENDING);
     prepare(getConfigForOperation());
     if (!shouldRunAsync()) {
-      runInternal();
+      runInternal(getConfigForOperation());
     } else {
       Runnable backgroundOperation = new Runnable() {
         SessionState ss = SessionState.get();
@@ -166,7 +167,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         public void run() {
           SessionState.start(ss);
           try {
-            runInternal();
+            runInternal(getConfigForOperation());
           } catch (HiveSQLException e) {
             LOG.error("Error: ", e);
             // TODO: Return a more detailed error to the client,
@@ -331,6 +332,34 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   private boolean shouldRunAsync() {
     return runAsync;
+  }
+
+  /**
+   * If there are query specific settings to overlay, then create a copy of config
+   * There are two cases we need to clone the session config that's being passed to hive driver
+   * 1. Async query -
+   *    If the client changes a config setting, that shouldn't reflect in the execution already underway
+   * 2. confOverlay -
+   *    The query specific settings should only be applied to the query config and not session
+   * @return new configuration
+   * @throws HiveSQLException
+   */
+  private HiveConf getConfigForOperation() throws HiveSQLException {
+    HiveConf sqlOperationConf = getParentSession().getHiveConf();
+    if (!getConfOverlay().isEmpty() || shouldRunAsync()) {
+      // clone the partent session config for this query
+      sqlOperationConf = new HiveConf(sqlOperationConf);
+
+      // apply overlay query specific settings, if any
+      for (Map.Entry<String, String> confEntry : getConfOverlay().entrySet()) {
+        try {
+          sqlOperationConf.verifyAndSet(confEntry.getKey(), confEntry.getValue());
+        } catch (IllegalArgumentException e) {
+          throw new HiveSQLException("Error applying statement specific settings", e);
+        }
+      }
+    }
+    return sqlOperationConf;
   }
 
 }

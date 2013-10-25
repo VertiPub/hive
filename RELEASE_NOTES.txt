@@ -326,6 +326,7 @@ Release Notes - Hive - Version 0.12.0
     * [HIVE-5489] - NOTICE copyright dates are out of date, README needs update
     * [HIVE-5493] - duplicate jars with different versions for guava, commons-logging
     * [HIVE-5497] - Hive trunk broken against hadoop 0.20.2
+    * [HIVE-5440] - HiveServer2 doesn't apply SQL operation's config property
     * [HIVE-5441] - Async query execution doesn't return resultset status
 
 
