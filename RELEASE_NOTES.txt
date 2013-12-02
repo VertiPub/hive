@@ -326,7 +326,7 @@ Release Notes - Hive - Version 0.12.0
     * [HIVE-5489] - NOTICE copyright dates are out of date, README needs update
     * [HIVE-5493] - duplicate jars with different versions for guava, commons-logging
     * [HIVE-5497] - Hive trunk broken against hadoop 0.20.2
-
+    * [HIVE-5441] - Async query execution doesn't return resultset status
 
 
 
@@ -415,7 +415,7 @@ Release Notes - Hive - Version 0.12.0
     * [HIVE-4844] - Add varchar data type
     * [HIVE-4911] - Enable QOP configuration for Hive Server 2 thrift transport
     * [HIVE-4963] - Support in memory PTF partitions
-
+    * [HIVE-4629] - HS2 should support an API to retrieve query logs
 
 
 
