@@ -28,7 +28,7 @@
   </configurations>
   <dependencies>
     <dependency org="org.apache.hive" name="hive-exec" rev="${version}"
-                conf="compile->default" />
+                conf="compile->default" transitive="false"/>
 
     <!-- Test Dependencies -->
   </dependencies>

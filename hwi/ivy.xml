@@ -27,7 +27,7 @@
   </configurations>  
   <dependencies>
     <dependency org="org.apache.hive" name="hive-cli" rev="${version}"
-                conf="compile->default" />
+                conf="compile->default" transitive="false"/>
     <dependency org="org.mortbay.jetty" name="jetty" rev="${jetty.version}" />
 
     <!-- Test Dependencies -->

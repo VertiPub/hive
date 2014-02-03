@@ -27,7 +27,7 @@
   </configurations>  
   <dependencies>
     <dependency org="org.apache.hive" name="hive-exec" rev="${version}"
-                conf="compile->default" />
+                conf="compile->default" transitive="false"/>
     <dependency org="org.apache.hbase" name="hbase" rev="${hbase.version}"
                 transitive="false">
       <artifact name="hbase" type="jar"/>

@@ -32,7 +32,7 @@
     <dependency org="jline" name="jline" rev="${jline.version}"
                 transitive="false"/>
     <dependency org="org.apache.hive" name="hive-service" rev="${version}"
-                conf="compile->default" />
+                conf="compile->default" transitive="false" />
     <dependency org="org.apache.hive" name="hive-shims" rev="${version}"
                 conf="runtime" transitive="false"/>
   </dependencies>
