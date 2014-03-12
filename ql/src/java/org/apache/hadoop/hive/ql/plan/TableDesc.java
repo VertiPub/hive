@@ -18,23 +18,25 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.InputFormat;
 
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
+
 /**
  * TableDesc.
  *
  */
 public class TableDesc implements Serializable, Cloneable {
+static final private Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.plan.TableDesc");
   private static final long serialVersionUID = 1L;
   private Class<? extends Deserializer> deserializerClass;
   private Class<? extends InputFormat> inputFileFormatClass;
@@ -50,6 +52,7 @@ public class TableDesc implements Serializable, Cloneable {
       final Class<? extends InputFormat> inputFileFormatClass,
       final Class<?> class1, final java.util.Properties properties) {
     deserializerClass = serdeClass;
+    LOG.info("Serializer class: " + deserializerClass + " called from: " + Arrays.toString(Thread.currentThread().getStackTrace()) );
     this.inputFileFormatClass = inputFileFormatClass;
     outputFileFormatClass = HiveFileFormatUtils
         .getOutputFormatSubstitute(class1, false);
@@ -60,6 +63,7 @@ public class TableDesc implements Serializable, Cloneable {
   }
 
   public Class<? extends Deserializer> getDeserializerClass() {
+
     return deserializerClass;
   }
 
