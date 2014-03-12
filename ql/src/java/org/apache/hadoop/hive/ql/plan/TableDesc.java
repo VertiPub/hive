@@ -52,6 +52,10 @@ static final private Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.plan
   public TableDesc(final Class<? extends Deserializer> serdeClass,
       final Class<? extends InputFormat> inputFileFormatClass,
       final Class<?> class1, final java.util.Properties properties) {
+    if (serdeClass == null )
+    {
+      throw new NullPointerException("Cannot set serdeClass to null");
+    }
     deserializerClass = serdeClass;
     LOG.info("Serializer class: " + deserializerClass + " called from: " + Arrays.toString(Thread.currentThread().getStackTrace()) );
     this.inputFileFormatClass = inputFileFormatClass;
@@ -70,6 +74,10 @@ static final private Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.plan
 
   public void setDeserializerClass(
       final Class<? extends Deserializer> serdeClass) {
+    if (serdeClass == null )
+    {
+      throw new NullPointerException("Cannot set serdeClass to null");
+    }
     deserializerClass = serdeClass;
   }
 
