@@ -64,6 +64,10 @@ public class FetchWork implements Serializable {
 
   public FetchWork(String tblDir, TableDesc tblDesc, int limit) {
     this.tblDir = tblDir;
+    if (tblDesc == null )
+    {
+      throw new NullPointerException("Cannot set tableDesc to null");
+    }
     this.tblDesc = tblDesc;
     this.limit = limit;
   }

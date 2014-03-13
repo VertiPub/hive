@@ -228,6 +228,9 @@ public class FetchOperator implements Serializable {
   }
 
   private StructObjectInspector getRowInspectorFromTable(TableDesc table) throws Exception {
+    if(table == null){
+      LOG.error("Table is null");
+    }
     Deserializer serde = table.getDeserializerClass().newInstance();
     serde.initialize(job, table.getProperties());
     return createRowInspector(getStructOIFrom(serde.getObjectInspector()));

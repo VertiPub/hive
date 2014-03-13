@@ -414,6 +414,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
             .getMsg());
         }
       } catch (ClassNotFoundException e) {
+        LOG.error("CNFE", e);
         throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg());
       }
     }

@@ -87,12 +87,14 @@ public final class SerDeUtils {
       try {
         c = Class.forName(name, true, JavaUtils.getClassLoader());
       } catch (ClassNotFoundException e) {
+        LOG.error("SerDe " + name + " does not exist", e);
         throw new SerDeException("SerDe " + name + " does not exist");
       }
     }
     try {
       return (Deserializer) c.newInstance();
     } catch (Exception e) {
+      LOG.error("SerDe " + name + " does not exist", e);
       throw new SerDeException(e);
     }
   }

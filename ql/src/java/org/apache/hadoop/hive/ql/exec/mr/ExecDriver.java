@@ -695,6 +695,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
     String addedJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEADDEDJARS);
+    console.printInfo("Added jars: " + addedJars + " auxJars: " + auxJars);
     try {
       // see also - code in CliDriver.java
       ClassLoader loader = conf.getClassLoader();

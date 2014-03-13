@@ -318,6 +318,7 @@ public class Partition implements Serializable {
         inputFormatClass = ((Class<? extends InputFormat>) Class.forName(clsName, true,
             JavaUtils.getClassLoader()));
       } catch (ClassNotFoundException e) {
+        LOG.error("CNFE", e);
         throw new HiveException("Class not found: " + clsName, e);
       }
     }
@@ -344,6 +345,7 @@ public class Partition implements Serializable {
           outputFormatClass = (Class<? extends HiveOutputFormat>)c;
         }
       } catch (ClassNotFoundException e) {
+        LOG.error("CNFE", e);
         throw new HiveException("Class not found: " + clsName, e);
       }
     }

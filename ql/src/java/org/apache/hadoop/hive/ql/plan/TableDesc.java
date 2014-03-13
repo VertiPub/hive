@@ -56,9 +56,18 @@ static final private Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.plan
       final Class<?> class1, final java.util.Properties properties) {
     if (serdeClass == null )
     {
-      throw new NullPointerException("Cannot set serdeClass to null");
+      LOG.error("Cannot set serdeClass to null", new NullPointerException("Cannot set serdeClass to null"));
+      try {
+        deserializerClass = (Class<? extends Deserializer>) Class.forName(
+                properties
+                        .getProperty(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_LIB), true, JavaUtils.getClassLoader());
+      } catch (ClassNotFoundException e) {
+        LOG.error("Could not find class: ", e);
+        throw new RuntimeException(e);
+      }
+    } else {
+      deserializerClass = serdeClass;
     }
-    deserializerClass = serdeClass;
     LOG.info("Serializer class: " + deserializerClass + " called from: " + Arrays.toString(Thread.currentThread().getStackTrace()) );
     this.inputFileFormatClass = inputFileFormatClass;
     outputFileFormatClass = HiveFileFormatUtils
@@ -70,16 +79,7 @@ static final private Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.plan
   }
 
   public Class<? extends Deserializer> getDeserializerClass() {
-    if (deserializerClass == null )
-    {
-      LOG.warn("Deserializer is null! " + Arrays.toString(Thread.currentThread().getStackTrace()) );
-      try {
-        deserializerClass = (Class<? extends Deserializer>) Class.forName(
-                serdeClassName, true, JavaUtils.getClassLoader());
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
-      }
-    }
+
     return deserializerClass;
   }
 
@@ -87,7 +87,7 @@ static final private Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.plan
       final Class<? extends Deserializer> serdeClass) {
     if (serdeClass == null )
     {
-      throw new NullPointerException("Cannot set serdeClass to null");
+      LOG.error("Cannot set serdeClass to null", new NullPointerException("Cannot set serdeClass to null"));
     }
     deserializerClass = serdeClass;
   }
