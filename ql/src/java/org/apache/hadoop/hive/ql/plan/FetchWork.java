@@ -22,7 +22,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -35,7 +36,7 @@ import org.apache.hadoop.hive.ql.parse.SplitSample;
 @Explain(displayName = "Fetch Operator")
 public class FetchWork implements Serializable {
   private static final long serialVersionUID = 1L;
-
+static final private Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.plan.FetchWork");
   private String tblDir;
   private TableDesc tblDesc;
 
@@ -64,10 +65,7 @@ public class FetchWork implements Serializable {
 
   public FetchWork(String tblDir, TableDesc tblDesc, int limit) {
     this.tblDir = tblDir;
-    if (tblDesc == null )
-    {
-      throw new NullPointerException("Cannot set tableDesc to null");
-    }
+    LOG.info("set tblDesc: " + tblDesc, new NullPointerException("Fetchwork"));
     this.tblDesc = tblDesc;
     this.limit = limit;
   }
@@ -78,6 +76,7 @@ public class FetchWork implements Serializable {
 
   public FetchWork(List<String> partDir, List<PartitionDesc> partDesc,
       TableDesc tblDesc, int limit) {
+    LOG.info("set tblDesc: " + tblDesc, new NullPointerException("Fetchwork"));
     this.tblDesc = tblDesc;
     this.partDir = new ArrayList<String>(partDir);
     this.partDesc = new ArrayList<PartitionDesc>(partDesc);

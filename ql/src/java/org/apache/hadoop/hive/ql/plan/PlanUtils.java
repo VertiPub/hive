@@ -274,7 +274,8 @@ public final class PlanUtils {
     tblDesc.getProperties().setProperty(serdeConstants.ESCAPE_CHAR, "\\");
     //enable extended nesting levels
     tblDesc.getProperties().setProperty(
-        LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS, "true");    
+        LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS, "true");
+    LOG.info("returning default tableDesc: " + tblDesc, new NullPointerException("find table!"));
     return tblDesc;
   }
 

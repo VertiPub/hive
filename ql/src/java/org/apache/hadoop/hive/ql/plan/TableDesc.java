@@ -68,7 +68,6 @@ static final private Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.plan
     } else {
       deserializerClass = serdeClass;
     }
-    LOG.info("Serializer class: " + deserializerClass + " called from: " + Arrays.toString(Thread.currentThread().getStackTrace()) );
     this.inputFileFormatClass = inputFileFormatClass;
     outputFileFormatClass = HiveFileFormatUtils
         .getOutputFormatSubstitute(class1, false);
@@ -79,7 +78,6 @@ static final private Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.plan
   }
 
   public Class<? extends Deserializer> getDeserializerClass() {
-
     return deserializerClass;
   }
 
@@ -88,6 +86,8 @@ static final private Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.plan
     if (serdeClass == null )
     {
       LOG.error("Cannot set serdeClass to null", new NullPointerException("Cannot set serdeClass to null"));
+    } else {
+      LOG.info("setting deserializer to " + serdeClass, new NullPointerException("oops!"));
     }
     deserializerClass = serdeClass;
   }
@@ -238,4 +238,15 @@ static final private Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.plan
       jobProperties.equals(target.jobProperties));
     return ret;
   }
+
+public void populateDeserializerClass() {
+  try {
+    deserializerClass = (Class<? extends Deserializer>) Class.forName(
+            properties
+                    .getProperty(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_LIB), true, JavaUtils.getClassLoader());
+  } catch (ClassNotFoundException e) {
+    LOG.error("Could not find class: ", e);
+    throw new RuntimeException(e);
+  }
+}
 }
