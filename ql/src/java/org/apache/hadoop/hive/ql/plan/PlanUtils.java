@@ -65,6 +65,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.hive.common.JavaUtils;
 
 /**
  * PlanUtils.
@@ -136,7 +137,7 @@ public final class PlanUtils {
         tableDesc.getProperties().setProperty(
             serdeConstants.SERIALIZATION_LIB, localDirectoryDesc.getSerName());
         tableDesc.setDeserializerClass(
-            (Class<? extends Deserializer>) Class.forName(localDirectoryDesc.getSerName()));
+            (Class<? extends Deserializer>) Class.forName(localDirectoryDesc.getSerName(), true, JavaUtils.getClassLoader()));
       }
       if (localDirectoryDesc.getOutputFormat() != null){
           tableDesc.setOutputFileFormatClass(Class.forName(localDirectoryDesc.getOutputFormat()));
