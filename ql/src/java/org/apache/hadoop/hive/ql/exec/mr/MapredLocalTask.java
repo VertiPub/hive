@@ -249,6 +249,11 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         LOG.debug("Setting env: " + env[pos-1]);
       }
 
+      //add extra paths
+      String addedJarsFromLocal = Utilities.getResourceFiles(conf, SessionState.ResourceType.JAR);
+      if (StringUtils.isNotBlank(addedJarsFromLocal)) {
+        cmdLine += " -addedJarsFromLocal " + addedJarsFromLocal;
+      } 
       LOG.info("Executing: " + cmdLine);
 
       // Run ExecDriver in another JVM
