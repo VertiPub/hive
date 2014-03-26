@@ -43,6 +43,7 @@ import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
+import org.apache.hive.service.cli.log.LogManager;
 import org.apache.hive.service.cli.operation.ExecuteStatementOperation;
 import org.apache.hive.service.cli.operation.GetCatalogsOperation;
 import org.apache.hive.service.cli.operation.GetColumnsOperation;
@@ -73,6 +74,7 @@ public class HiveSessionImpl implements HiveSession {
 
   private SessionManager sessionManager;
   private OperationManager operationManager;
+  private LogManager logManager;
   private IMetaStoreClient metastoreClient = null;
   private final Set<OperationHandle> opHandleSet = new HashSet<OperationHandle>();
 
@@ -133,6 +135,14 @@ public class HiveSessionImpl implements HiveSession {
     return hiveConf;
   }
 
+  public LogManager getLogManager() {
+    return logManager;
+  }
+
+  public void setLogManager(LogManager logManager) {
+    this.logManager = logManager;
+  }
+
   public IMetaStoreClient getMetaStoreClient() throws HiveSQLException {
     if (metastoreClient == null) {
       try {
@@ -163,7 +173,7 @@ public class HiveSessionImpl implements HiveSession {
         return new GetInfoValue(128);
       case CLI_TXN_CAPABLE:
       default:
-        throw new HiveSQLException("Unrecognized GetInfoType value: " + getInfoType.toString());
+        throw new HiveSQLException("Unrecognized GetInfoType value: "  + getInfoType.toString());
       }
     } finally {
       release();
@@ -192,6 +202,12 @@ public class HiveSessionImpl implements HiveSession {
     try {
       operation.run();
       opHandleSet.add(opHandle);
+      OperationHandle opHandle = operation.getHandle();
+      //Log capture
+      getLogManager().unregisterCurrentThread();
+      getLogManager().registerCurrentThread(opHandle);
+      operation.run();
+      getLogManager().unregisterCurrentThread();
       return opHandle;
     } catch (HiveSQLException e) {
       operationManager.closeOperation(opHandle);
@@ -209,8 +225,14 @@ public class HiveSessionImpl implements HiveSession {
     GetTypeInfoOperation operation = operationManager.newGetTypeInfoOperation(getSession());
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
+      GetTypeInfoOperation operation = getOperationManager().newGetTypeInfoOperation(getSession());
       opHandleSet.add(opHandle);
+      OperationHandle opHandle = operation.getHandle();
+      //Log capture
+      getLogManager().unregisterCurrentThread();
+      getLogManager().registerCurrentThread(opHandle);
+      operation.run();
+      getLogManager().unregisterCurrentThread();
       return opHandle;
     } catch (HiveSQLException e) {
       operationManager.closeOperation(opHandle);
@@ -228,8 +250,14 @@ public class HiveSessionImpl implements HiveSession {
     GetCatalogsOperation operation = operationManager.newGetCatalogsOperation(getSession());
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
+      GetCatalogsOperation operation = getOperationManager().newGetCatalogsOperation(getSession());
       opHandleSet.add(opHandle);
+      OperationHandle opHandle = operation.getHandle();
+      //Log capture
+      getLogManager().unregisterCurrentThread();
+      getLogManager().registerCurrentThread(opHandle);
+      operation.run();
+      getLogManager().unregisterCurrentThread();
       return opHandle;
     } catch (HiveSQLException e) {
       operationManager.closeOperation(opHandle);
@@ -248,8 +276,13 @@ public class HiveSessionImpl implements HiveSession {
         operationManager.newGetSchemasOperation(getSession(), catalogName, schemaName);
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
+      //Log capture
       opHandleSet.add(opHandle);
+      OperationHandle opHandle = operation.getHandle();
+      getLogManager().unregisterCurrentThread();
+      getLogManager().registerCurrentThread(opHandle);
+      operation.run();
+      getLogManager().unregisterCurrentThread();
       return opHandle;
     } catch (HiveSQLException e) {
       operationManager.closeOperation(opHandle);
@@ -269,8 +302,14 @@ public class HiveSessionImpl implements HiveSession {
         operationManager.newGetTablesOperation(getSession(), catalogName, schemaName, tableName, tableTypes);
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
+          getOperationManager().newGetTablesOperation(getSession(), catalogName, schemaName, tableName, tableTypes);
       opHandleSet.add(opHandle);
+      OperationHandle opHandle = operation.getHandle();
+      //Log capture
+      getLogManager().unregisterCurrentThread();
+      getLogManager().registerCurrentThread(opHandle);
+      operation.run();
+      getLogManager().unregisterCurrentThread();
       return opHandle;
     } catch (HiveSQLException e) {
       operationManager.closeOperation(opHandle);
@@ -288,8 +327,15 @@ public class HiveSessionImpl implements HiveSession {
     GetTableTypesOperation operation = operationManager.newGetTableTypesOperation(getSession());
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
+      GetColumnsOperation operation = getOperationManager().newGetColumnsOperation(getSession(),
+      GetTableTypesOperation operation = getOperationManager().newGetTableTypesOperation(getSession());
       opHandleSet.add(opHandle);
+      OperationHandle opHandle = operation.getHandle();
+      //Log capture
+      getLogManager().unregisterCurrentThread();
+      getLogManager().registerCurrentThread(opHandle);
+      operation.run();
+      getLogManager().unregisterCurrentThread();
       return opHandle;
     } catch (HiveSQLException e) {
       operationManager.closeOperation(opHandle);
@@ -308,7 +354,14 @@ public class HiveSessionImpl implements HiveSession {
         catalogName, schemaName, tableName, columnName);
     OperationHandle opHandle = operation.getHandle();
     try {
-    operation.run();
+      OperationHandle opHandle = operation.getHandle();
+      //Log capture
+      getLogManager().unregisterCurrentThread();
+      getLogManager().registerCurrentThread(opHandle);
+      operation.run();
+      getLogManager().unregisterCurrentThread();
+      opHandleSet.add(opHandle);
+      return opHandle;
     opHandleSet.add(opHandle);
     return opHandle;
     } catch (HiveSQLException e) {
@@ -328,8 +381,14 @@ public class HiveSessionImpl implements HiveSession {
         .newGetFunctionsOperation(getSession(), catalogName, schemaName, functionName);
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
+          .newGetFunctionsOperation(getSession(), catalogName, schemaName, functionName);
       opHandleSet.add(opHandle);
+      OperationHandle opHandle = operation.getHandle();
+      //Log capture
+      getLogManager().unregisterCurrentThread();
+      getLogManager().registerCurrentThread(opHandle);
+      operation.run();
+      getLogManager().unregisterCurrentThread();
       return opHandle;
     } catch (HiveSQLException e) {
       operationManager.closeOperation(opHandle);

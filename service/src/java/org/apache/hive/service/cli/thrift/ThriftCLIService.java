@@ -1,3 +1,6 @@
+  }
+
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -109,6 +112,20 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       isStarted = false;
     }
     super.stop();
+  }
+
+  @Override
+  public TGetLogResp GetLog(TGetLogReq req) throws TException {
+    TGetLogResp resp = new TGetLogResp();
+    try {
+      String log = cliService.getLog(new OperationHandle(req.getOperationHandle()));
+      resp.setStatus(OK_STATUS);
+      resp.setLog(log);
+    } catch (Exception e) {
+      e.printStackTrace();
+      resp.setStatus(HiveSQLException.toTStatus(e));
+    }
+    return resp;
   }
 
 
