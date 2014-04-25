@@ -46,13 +46,11 @@ public class HiveMetaStoreFsImpl implements MetaStoreFS {
 
     try {
       if (skipTrash){
-          LOG.info("Not moving"+ f +" to trash due to configuration " +
-            HiveConf.ConfVars.HIVE_WAREHOUSE_DATA_SKIPTRASH + " is set to true.");
-      }else{
-        if (hadoopShim.moveToAppropriateTrash(fs, f, conf)) {
-          LOG.info("Moved to trash: " + f);
-          return true;
-        }
+        LOG.info("Not moving"+ f +" to trash due to configuration " +
+          HiveConf.ConfVars.HIVE_WAREHOUSE_DATA_SKIPTRASH + " is set to true.");
+      }else if (hadoopShim.moveToAppropriateTrash(fs, f, conf)) {
+        LOG.info("Moved to trash: " + f);
+        return true;
       }
 
       if (fs.delete(f, true)) {
