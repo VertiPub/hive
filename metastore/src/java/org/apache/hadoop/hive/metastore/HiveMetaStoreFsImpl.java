@@ -43,7 +43,7 @@ public class HiveMetaStoreFsImpl implements MetaStoreFS {
 
     boolean skipTrash = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.HIVE_WAREHOUSE_DATA_SKIPTRASH);
-
+    LOG.info("skipTrash:"+skipTrash);
     try {
       if (skipTrash) {
         LOG.info("Not moving"+ f +" to trash due to configuration " +
