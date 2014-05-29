@@ -272,6 +272,20 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     return sessionHandle;
   }
 
+  @Override
+  public TGetLogResp GetLog(TGetLogReq req) throws TException {
+    TGetLogResp resp = new TGetLogResp();
+    try {
+      String log = cliService.getLog(new OperationHandle(req.getOperationHandle()));
+      resp.setStatus(OK_STATUS);
+      resp.setLog(log);
+    } catch (Exception e) {
+      e.printStackTrace();
+      resp.setStatus(HiveSQLException.toTStatus(e));
+    }
+    return resp;
+  }
+
 
   private String getDelegationToken(String userName)
       throws HiveSQLException, LoginException, IOException {
@@ -594,6 +608,8 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     return cliService.getHiveConf().getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION)
         .equals(HiveAuthFactory.AuthTypes.KERBEROS.toString());
   }
+
+
 
 }
 

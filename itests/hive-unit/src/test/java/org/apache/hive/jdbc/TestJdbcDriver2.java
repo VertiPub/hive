@@ -1013,6 +1013,31 @@ public class TestJdbcDriver2 {
   }
 
   @Test
+  public void testGetLog() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+    assertNotNull("Statement is null", stmt);
+
+    ResultSet res = stmt.executeQuery("select count(*) from " + tableName);
+    ResultSetMetaData meta = res.getMetaData();
+    while (res.next()) {
+    }
+
+    String log = stmt.getLog();
+    assertTrue("Operation Log looks incorrect",
+        log.contains("Parsing command: select count(*) from testHiveJdbcDriver_Table"));
+    assertTrue("Operation Log looks incorrect",
+        log.contains("select count(*) from testHiveJdbcDriver_Table"));
+    stmt.close();
+
+    try {
+      stmt.getLog();
+      assertFalse("Should throw exception after close", true);
+    } catch (SQLException e) {
+      assertEquals("Can't get log for statement after statement has been closed", e.getMessage());
+    }
+  }
+
+  @Test
   public void testShowTables() throws SQLException {
     Statement stmt = con.createStatement();
     assertNotNull("Statement is null", stmt);
