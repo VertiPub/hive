@@ -63,7 +63,7 @@ public class TestHiveServer2 {
     String tabName = "testTab1";
     CLIServiceClient serviceClient = miniHS2.getServiceClient();
     SessionHandle sessHandle = serviceClient.openSession("foo", "bar");
-    serviceClient.executeStatement(sessHandle, "DROP TABLE IF EXISTS tab", confOverlay);
+    serviceClient.executeStatement(sessHandle, "DROP TABLE IF EXISTS " + tabName, confOverlay);
     serviceClient.executeStatement(sessHandle, "CREATE TABLE " + tabName + " (id INT)", confOverlay);
     OperationHandle opHandle = serviceClient.executeStatement(sessHandle, "SHOW TABLES", confOverlay);
     RowSet rowSet = serviceClient.fetchResults(opHandle);

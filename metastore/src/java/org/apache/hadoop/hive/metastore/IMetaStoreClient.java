@@ -185,6 +185,10 @@ public interface IMetaStoreClient {
    *          The database for this table
    * @param tableName
    *          The table to drop
+   * @param deleteData
+   *          Should we delete the underlying data
+   * @param ignoreUnknownTab
+   *          don't throw if the requested table doesn't exist
    * @throws MetaException
    *           Could not drop table properly.
    * @throws NoSuchObjectException
@@ -194,6 +198,15 @@ public interface IMetaStoreClient {
    */
   public void dropTable(String dbname, String tableName, boolean deleteData,
       boolean ignoreUknownTab) throws MetaException, TException,
+      NoSuchObjectException;
+
+  /**
+   * @param ifPurge
+   *          completely purge the table (skipping trash) while removing data from warehouse
+   * @see #dropTable(String, String, boolean, boolean)
+   */
+  public void dropTable(String dbname, String tableName, boolean deleteData,
+      boolean ignoreUnknownTab, boolean ifPurge) throws MetaException, TException,
       NoSuchObjectException;
 
   /**
@@ -220,6 +233,9 @@ public interface IMetaStoreClient {
       throws MetaException, UnknownTableException, TException,
       NoSuchObjectException;
 
+  /**
+   * @see #dropTable(String, String, boolean, boolean)
+   */
   public void dropTable(String dbname, String tableName)
       throws MetaException, TException, NoSuchObjectException;
 
