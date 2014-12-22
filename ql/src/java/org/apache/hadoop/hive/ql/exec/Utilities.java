@@ -183,7 +183,9 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
-import com.esotericsoftware.shaded.org.objenesis.strategy.StdInstantiatorStrategy;
+// AE-936 Use a different namespace to accomodate Kryo 0.21 in Spark 1.2
+// import com.esotericsoftware.shaded.org.objenesis.strategy.StdInstantiatorStrategy;
+import org.objenesis.strategy.StdInstantiatorStrategy;
 
 /**
  * Utilities.
