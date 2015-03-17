@@ -356,7 +356,7 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
         "hive.cluster.delegation.token.store.zookeeper.acl";
     public static final String DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT =
         "/hive/cluster/delegation";
-    public static final String CUSTOME_AUTHENTICATION_CLS =
+    public static final String CUSTOM_AUTHENTICATION_CLS =
         "hive.server2.thrift.custom.authentication.class";
 
     public Server() throws TTransportException {
@@ -441,7 +441,8 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
 //      transFactory.addServerDefinition(AuthMethod.SIMPLE.getMechanismName(),
           "NONE", null, new HashMap<String, String>(),
 //          new PlainServerCallbackHandler("CUSTOM"));
-          new SaslCustomServerCallbackHandler());
+          new SaslCustomServerCallbackHandler(new Configuration()));
+//          new SaslCustomServerCallbackHandler());
           
       return new TUGIAssumingTransportFactory(transFactory, realUgi);
     }
@@ -605,9 +606,8 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
       String userName = null;
       String userPassword = null;
 
-/*
       public SaslCustomServerCallbackHandler(Configuration conf) {
-        String customClassName = conf.get(CUSTOME_AUTHENTICATION_CLS, "");
+        String customClassName = conf.get(CUSTOM_AUTHENTICATION_CLS, "org.apache.hadoop.hive.thrift.AltiAuthenticationProviderImpl");
 
         try {
 
@@ -618,16 +618,18 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
           Class<? extends CustomAuthenticationProvider> customHandlerClass = Class
             .forName(customClassName).asSubclass(
                 CustomAuthenticationProvider.class);
+          LOG.info("HEESOO - CUSTOM_AUTHENTICATION_CLS: " + customClassName);
           this.customProvider = ReflectionUtils.newInstance(customHandlerClass, conf);
         } catch (ClassNotFoundException e) {
-          LOG.debug("Cannot find custom authentication class: " 
+          LOG.info("Cannot find custom authentication class: " 
             + customClassName);
         }
       }
-*/
 
+/*
       public SaslCustomServerCallbackHandler() {
       }
+*/
       
       @Override
       public void handle(Callback[] callbacks) throws InvalidToken,
@@ -653,13 +655,16 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
           }
         }
         
+        LOG.info("HEESOO - ServerHandle, userName:["+userName+"], userPassword:["+userPassword+"]");
         try {
           // It calls custom Authentication module
-//          customProvider.Authenticate(userName, userPassword);  
+          this.customProvider.Authenticate(userName, userPassword);  
+/*
            if (!userName.equals("hiveuser"))
              throw new AuthenticationException("AUTHEXCEPTION");
-          
+*/          
         } catch (AuthenticationException e) {
+          throw new InvalidToken("HEESOO ---- ERROR: "+userName+" is not allowed");
         }
 /*
           AuthMethods authMethod = AuthMethods.getValidAuthMethod("CUSTOM");
@@ -794,7 +799,7 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
         SaslServer saslServer = saslTrans.getSaslServer();
         String authId = saslServer.getAuthorizationID();
         //authenticationMethod.set(AuthenticationMethod.KERBEROS);
-        LOG.debug("AUTH ID ======>" + authId);
+        LOG.info("AUTH ID ======>" + authId);
         String endUser = authId;
 
         if(saslServer.getMechanismName().equals("DIGEST-MD5")) {
@@ -810,6 +815,9 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
         else if (saslServer.getMechanismName().equals("GSSAPI")) {
           authenticationMethod.set(AuthenticationMethod.KERBEROS);
         }
+        else if (saslServer.getMechanismName().equals("PLAIN")) {
+          LOG.info("HEESOO - PLAIN - custom check user password");
+        }
         Socket socket = ((TSocket)(saslTrans.getUnderlyingTransport())).getSocket();
         remoteAddress.set(socket.getInetAddress());
         UserGroupInformation clientUgi = null;
@@ -818,7 +826,7 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
             clientUgi = UserGroupInformation.createProxyUser(
                 endUser, UserGroupInformation.getLoginUser());
             remoteUser.set(clientUgi.getShortUserName());
-            LOG.debug("Set remoteUser :" + remoteUser.get());
+            LOG.info("Set remoteUser :" + remoteUser.get());
             return clientUgi.doAs(new PrivilegedExceptionAction<Boolean>() {
               @Override
               public Boolean run() {
@@ -833,7 +841,7 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
             // use the short user name for the request
             UserGroupInformation endUserUgi = UserGroupInformation.createRemoteUser(endUser);
             remoteUser.set(endUserUgi.getShortUserName());
-            LOG.debug("Set remoteUser :" + remoteUser.get() + ", from endUser :" + endUser);
+            LOG.info("Set remoteUser :" + remoteUser.get() + ", from endUser :" + endUser);
             return wrapped.process(inProt, outProt);
           }
         } catch (RuntimeException rte) {
