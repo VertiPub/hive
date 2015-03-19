@@ -33,11 +33,7 @@ import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.transport.TSaslClientTransport;
 import org.apache.thrift.transport.TTransport;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 public class KerberosSaslHelper {
-  public static final Log LOG = LogFactory.getLog(KerberosSaslHelper.class.getName());
 
   private static class CLIServiceProcessorFactory extends TProcessorFactory {
     private final ThriftCLIService service;
@@ -105,35 +101,6 @@ public class KerberosSaslHelper {
           "DIGEST", tokenStr, underlyingTransport, saslProps);
     } catch (IOException e) {
       throw new SaslException("Failed to open client transport", e);
-    }
-  }
-
-  // HEESOO - Client
-  public static TTransport getCustomTransport(String principal, String host,
-      final TTransport underlyingTransport, Map<String, String> saslProps) throws SaslException {
-
-    HadoopThriftAuthBridge.Client authBridge =
-      ShimLoader.getHadoopThriftAuthBridge().createClientWithConf("kerberos");
-
-    if (authBridge == null) 
-      LOG.info("HEESOO authBridge is null");
-    try {
-      LOG.info("HEESOO call authBridge.createClientTransport()");
-      TTransport customTransport = authBridge.createClientTransport(null, host,
-          "DIGEST", null, underlyingTransport, saslProps);
-      if (customTransport == null)
-        LOG.info("HEESOO customTransport is null");
-/*
-      return authBridge.createClientTransport(null, host,
-          "DIGEST", "abcdef", underlyingTransport, saslProps);
-*/
-      return customTransport;
-
-    } catch (IOException e) {
-      throw new SaslException("Failed to open client transport", e);
-    } catch (Exception ie) {
-      LOG.info("HEESOO 2 Exception: " + ie.getMessage());
-      throw new SaslException("HEESOO 2 Exception ", ie);
     }
   }
 }

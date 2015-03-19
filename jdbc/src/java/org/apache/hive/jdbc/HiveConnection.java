@@ -96,7 +96,6 @@ public class HiveConnection implements java.sql.Connection {
   private static final String HIVE_AUTH_PASSWD = "password";
   private static final String HIVE_AUTH_KERBEROS_AUTH_TYPE = "kerberosAuthType";
   private static final String HIVE_AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT = "fromSubject";
-  private static final String HIVE_AUTH_CUSTOM = "custom";
   private static final String HIVE_AUTH_TOKEN_STRING = "dtToken";
   private static final String HIVE_ANONYMOUS_USER = "anonymous";
   private static final String HIVE_ANONYMOUS_PASSWD = "anonymous";
@@ -345,52 +344,31 @@ public class HiveConnection implements java.sql.Connection {
               sessConfMap.get(HIVE_AUTH_PRINCIPAL), host,
               HiveAuthFactory.getSocketTransport(host, port, loginTimeout), saslProps, assumeSubject);
         } else {
-          // If custom class
-          // It handles delegationToken, SASL and custom auth type as DIGEST-MD5
-          
-          LOG.info("HEESOO - CALL HIVE_AUTH_CUSTOM====");
-          if (HIVE_AUTH_CUSTOM.equals(sessConfMap.get(HIVE_AUTH_TYPE))) {
-            // TODO: Error handling for null value
-            try {
-            LOG.info("HEESOO - getUserName() : " + getUserName());
-            //saslProps.put(HIVE_AUTH_USER, "hiveuser");
-            LOG.info("HEESOO - getPassword() CALLED====");
-            //saslProps.put(HIVE_AUTH_PASSWD, "hive");
-            LOG.info("HEESOO - CALL getCustomTransport()====");
-            transport = KerberosSaslHelper.getCustomTransport(
-                null, host, HiveAuthFactory.getSocketTransport(host, port, loginTimeout), saslProps);
-            if (transport == null) 
-              LOG.info("HEESOO - transport is null");
-            } catch (Exception e) {
-              LOG.info("HEESOO Excepton: " + e.getMessage());
-            }
+          // If there's a delegation token available then use token based connection
+          String tokenStr = getClientDelegationToken(sessConfMap);
+          if (tokenStr != null) {
+            transport = KerberosSaslHelper.getTokenTransport(tokenStr,
+                host, HiveAuthFactory.getSocketTransport(host, port, loginTimeout), saslProps);
           } else {
-            // If there's a delegation token available then use token based connection
-            String tokenStr = getClientDelegationToken(sessConfMap);
-            if (tokenStr != null) {
-              transport = KerberosSaslHelper.getTokenTransport(tokenStr,
-                  host, HiveAuthFactory.getSocketTransport(host, port, loginTimeout), saslProps);
-            } else {
-              // we are using PLAIN Sasl connection with user/password
-              String userName = getUserName();
-              String passwd = getPassword();
-              if (isSslConnection()) {
-                // get SSL socket
-                String sslTrustStore = sessConfMap.get(HIVE_SSL_TRUST_STORE);
-                String sslTrustStorePassword = sessConfMap.get(HIVE_SSL_TRUST_STORE_PASSWORD);
-                if (sslTrustStore == null || sslTrustStore.isEmpty()) {
-                  transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout);
-                } else {
-                  transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout,
-                      sslTrustStore, sslTrustStorePassword);
-                }
+            // we are using PLAIN Sasl connection with user/password
+            String userName = getUserName();
+            String passwd = getPassword();
+            if (isSslConnection()) {
+              // get SSL socket
+              String sslTrustStore = sessConfMap.get(HIVE_SSL_TRUST_STORE);
+              String sslTrustStorePassword = sessConfMap.get(HIVE_SSL_TRUST_STORE_PASSWORD);
+              if (sslTrustStore == null || sslTrustStore.isEmpty()) {
+                transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout);
               } else {
-                // get non-SSL socket transport
-                transport = HiveAuthFactory.getSocketTransport(host, port, loginTimeout);
+                transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout,
+                    sslTrustStore, sslTrustStorePassword);
               }
-              // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
-              transport = PlainSaslHelper.getPlainTransport(userName, passwd, transport);
+            } else {
+              // get non-SSL socket transport
+              transport = HiveAuthFactory.getSocketTransport(host, port, loginTimeout);
             }
+            // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
+            transport = PlainSaslHelper.getPlainTransport(userName, passwd, transport);
           }
         }
       } else {
@@ -403,10 +381,7 @@ public class HiveConnection implements java.sql.Connection {
     } catch (TTransportException e) {
       throw new SQLException("Could not create connection to "
           + jdbcURI + ": " + e.getMessage(), " 08S01", e);
-    } catch (Exception e) {
-      throw new SQLException("HEESOO Error " + e.getMessage());
     }
-    
     return transport;
   }
 
