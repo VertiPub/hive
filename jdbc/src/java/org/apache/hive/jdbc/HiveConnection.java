@@ -96,6 +96,7 @@ public class HiveConnection implements java.sql.Connection {
   private static final String HIVE_AUTH_PASSWD = "password";
   private static final String HIVE_AUTH_KERBEROS_AUTH_TYPE = "kerberosAuthType";
   private static final String HIVE_AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT = "fromSubject";
+  private static final String HIVE_AUTH_TOKEN_STRING = "dtToken";
   private static final String HIVE_ANONYMOUS_USER = "anonymous";
   private static final String HIVE_ANONYMOUS_PASSWD = "anonymous";
   private static final String HIVE_USE_SSL = "ssl";
@@ -389,12 +390,19 @@ public class HiveConnection implements java.sql.Connection {
       throws SQLException {
     String tokenStr = null;
     if (HIVE_AUTH_TOKEN.equalsIgnoreCase(jdbcConnConf.get(HIVE_AUTH_TYPE))) {
-      // check delegation token in job conf if any
-      try {
-        tokenStr = ShimLoader.getHadoopShims().
-            getTokenStrForm(HiveAuthFactory.HS2_CLIENT_TOKEN);
-      } catch (IOException e) {
-        throw new SQLException("Error reading token ", e);
+      if (jdbcConnConf.containsKey(HIVE_AUTH_TOKEN_STRING)) {
+        // get delegation token string
+        tokenStr = jdbcConnConf.get(HIVE_AUTH_TOKEN_STRING);
+        if (tokenStr == null || tokenStr.isEmpty())
+          throw new SQLException("dtToken is null or empty");
+      } else {
+        // check delegation token in job conf if any
+        try {
+          tokenStr = ShimLoader.getHadoopShims().
+              getTokenStrForm(HiveAuthFactory.HS2_CLIENT_TOKEN);
+        } catch (IOException e) {
+          throw new SQLException("Error reading token ", e);
+        }
       }
     }
     return tokenStr;

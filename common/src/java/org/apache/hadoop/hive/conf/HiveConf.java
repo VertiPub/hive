@@ -1017,6 +1017,14 @@ public class HiveConf extends Configuration {
     HIVE_COMPAT("hive.compat", HiveCompat.DEFAULT_COMPAT_LEVEL),
     HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ("hive.convert.join.bucket.mapjoin.tez", false),
 
+    // ALTISCALE: add new configuration for SASL(PLAIN) over SSL on kerberos
+    HIVE_SERVER2_THRIFT_KERBEROS_USE_SSL("hive.server2.thrift.kerberos.use.SSL", false),
+    HIVE_SERVER2_THRIFT_KERBEROS_SSL_PORT("hive.server2.thrift.kerberos.ssl.port", 10010),
+    HIVE_SERVER2_THRIFT_KERBEROS_SSL_KEYSTORE_PATH("hive.server2.thrift.kerberos.ssl.keystore.path", ""),
+    HIVE_SERVER2_THRIFT_KERBEROS_SSL_KEYSTORE_PASSWORD("hive.server2.thrift.kerberos.ssl.keystore.password", ""),
+    HIVE_SERVER2_THRIFT_KERBEROS_SSL_MIN_WORKER_THREADS("hive.server2.thrift.kerberos.ssl.min.worker.threads", 5),
+    HIVE_SERVER2_THRIFT_KERBEROS_SSL_MAX_WORKER_THREADS("hive.server2.thrift.kerberos.ssl.max.worker.threads", 500),
+
     // Check if a plan contains a Cross Product.
     // If there is one, output a warning to the Session's console.
     HIVE_CHECK_CROSS_PRODUCT("hive.exec.check.crossproducts", true),

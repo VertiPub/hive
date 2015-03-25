@@ -100,6 +100,7 @@ public class HadoopThriftAuthBridge {
 
   public static abstract class Server {
     public abstract TTransportFactory createTransportFactory(Map<String, String> saslProps) throws TTransportException;
+    public abstract TTransportFactory createPlainTransportFactory(Map<String, String> saslProps) throws TTransportException;
     public abstract TProcessor wrapProcessor(TProcessor processor);
     public abstract TProcessor wrapNonAssumingProcessor(TProcessor processor);
     public abstract InetAddress getRemoteAddress();
