@@ -24,6 +24,10 @@ import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_N
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
@@ -5166,10 +5170,27 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       int maxWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXTHREADS);
       boolean tcpKeepAlive = conf.getBoolVar(HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE);
       boolean useFramedTransport = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_FRAMED_TRANSPORT);
+      String metastoreUri = conf.getVar(HiveConf.ConfVars.METASTOREURIS);
       useSasl = conf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL);
 
-      TServerTransport serverTransport = tcpKeepAlive ?
+      TServerTransport serverTransport = null;
+      String metastoreHost = null;
+
+      if (metastoreUri != null && !metastoreUri.isEmpty()) {
+        try {
+          URI tmpUri = new URI(conf.getVar(HiveConf.ConfVars.METASTOREURIS));
+          metastoreHost = tmpUri.getHost();
+          InetSocketAddress serverAddress = new InetSocketAddress(metastoreHost, port);
+          serverTransport = new TServerSocket(serverAddress);
+        } catch (URISyntaxException e) {
+          throw new HiveMetaException("Cannot parse METASTOREURIS");
+        }
+      }
+
+      if (metastoreHost == null || metastoreHost.isEmpty()) {
+        serverTransport = tcpKeepAlive ?
           new TServerSocketKeepAlive(port) : new TServerSocket(port);
+      }
 
       TProcessor processor;
       TTransportFactory transFactory;
