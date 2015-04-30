@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -184,14 +185,17 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   /**
    * A cache of InputFormat instances.
    */
-  protected static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats;
+  protected static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats
+	= new ConcurrentHashMap<Class, InputFormat<WritableComparable, Writable>>();
 
   public static InputFormat<WritableComparable, Writable> getInputFormatFromCache(
     Class inputFormatClass, JobConf job) throws IOException {
-
-    if (inputFormats == null) {
+    
+    System.out.println("###########**********THIS IS TEST OUTPUT**************###########@@@@@@@@@");
+    LOG.info("###########**********THIS IS TEST OUTPUT**************###########@@@@@@@@@");
+   /* if (inputFormats == null) {
       inputFormats = new HashMap<Class, InputFormat<WritableComparable, Writable>>();
-    }
+    }*/
     if (!inputFormats.containsKey(inputFormatClass)) {
       try {
         InputFormat<WritableComparable, Writable> newInstance = (InputFormat<WritableComparable, Writable>) ReflectionUtils
@@ -353,7 +357,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       }
 
       if (!currentDirs.isEmpty()) {
-        LOG.info("Generating splits");
+        LOG.info("Generating splits Testing####123");
         addSplitsForGroup(currentDirs, currentTableScan, newjob,
             getInputFormatFromCache(currentInputFormatClass, job),
             currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
@@ -368,14 +372,14 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     if (dirs.length != 0) {
-      LOG.info("Generating splits");
+      LOG.info("Generating splits Testing####123");
       addSplitsForGroup(currentDirs, currentTableScan, newjob,
           getInputFormatFromCache(currentInputFormatClass, job),
           currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
           currentTable, result);
     }
 
-    LOG.info("number of splits " + result.size());
+    LOG.info("Testing####123 number of splits " + result.size());
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new HiveInputSplit[result.size()]);
   }
