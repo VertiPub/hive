@@ -191,7 +191,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   public static InputFormat<WritableComparable, Writable> getInputFormatFromCache(
     Class inputFormatClass, JobConf job) throws IOException {
     
-    System.out.println("###########**********THIS IS TEST OUTPUT**************###########@@@@@@@@@");
     LOG.info("###########**********THIS IS TEST OUTPUT**************###########@@@@@@@@@");
    /* if (inputFormats == null) {
       inputFormats = new HashMap<Class, InputFormat<WritableComparable, Writable>>();
