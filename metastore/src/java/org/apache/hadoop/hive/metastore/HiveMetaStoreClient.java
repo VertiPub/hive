@@ -334,10 +334,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
             NetUtils.connect(socket, server, 1000 * clientSocketTimeout);
             transport = new TSocket(socket);
           } catch (TTransportException e) {
-              LOG.error("Couldn't create client transport", e);
+              LOG.error("Couldn't create client transport to HiveMetastore(" 
+                + store.getHost() + ":" + store.getPort() + ")", e);
               throw new MetaException(e.toString());
           } catch (IOException ioe) {
-              LOG.error("Couldn't create client transport", ioe);
+              LOG.error("Couldn't create client transport to HiveMetastore(" 
+                + store.getHost() + ":" + store.getPort() + ")", ioe);
               throw new MetaException(ioe.toString());
           }
 
