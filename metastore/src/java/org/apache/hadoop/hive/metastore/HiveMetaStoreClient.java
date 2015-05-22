@@ -27,9 +27,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.net.Socket;
+import javax.net.SocketFactory;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,6 +125,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TApplicationException;
@@ -130,6 +135,8 @@ import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+
+import org.apache.hadoop.net.NetUtils;
 
 /**
  * Hive Metastore Client.
@@ -293,11 +300,49 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     boolean useFramedTransport = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_FRAMED_TRANSPORT);
     int clientSocketTimeout = conf.getIntVar(ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT);
 
+    SocketFactory socketFactory = SocketFactory.getDefault();
+    Socket socket = null;
+    try {
+      socket = socketFactory.createSocket();
+      socket.setKeepAlive(true);
+
+      String hiveHost = conf.getVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST);
+      if (hiveHost.isEmpty()) {
+        UserGroupInformation loginUser = UserGroupInformation.getLoginUser();
+        if (loginUser != null && loginUser.hasKerberosCredentials()) {
+          hiveHost = SecurityUtil.getHostFromPrincipal(loginUser.getUserName());
+        }
+      }
+
+      if (!hiveHost.isEmpty()) {
+        InetAddress localAddr = NetUtils.getLocalInetAddress(hiveHost);
+        if (localAddr != null) {
+          socket.bind(new InetSocketAddress(localAddr, 0));
+        }
+      }
+    } catch (IOException ioe) {
+       LOG.error("Couldn't create client transport", ioe);
+       throw new MetaException(ioe.toString());
+    }
+
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
       for (URI store : metastoreUris) {
         LOG.info("Trying to connect to metastore with URI " + store);
         try {
-          transport = new TSocket(store.getHost(), store.getPort(), 1000 * clientSocketTimeout);
+          try {
+            InetSocketAddress server = new InetSocketAddress(store.getHost(), store.getPort());
+            NetUtils.connect(socket, server, 1000 * clientSocketTimeout);
+            transport = new TSocket(socket);
+          } catch (TTransportException e) {
+              LOG.error("Couldn't create client transport to HiveMetastore(" 
+                + store.getHost() + ":" + store.getPort() + ")", e);
+              throw new MetaException(e.toString());
+          } catch (IOException ioe) {
+              LOG.error("Couldn't create client transport to HiveMetastore(" 
+                + store.getHost() + ":" + store.getPort() + ")", ioe);
+              throw new MetaException(ioe.toString());
+          }
+
           if (useSasl) {
             // Wrap thrift connection with SASL for secure connection.
             try {
