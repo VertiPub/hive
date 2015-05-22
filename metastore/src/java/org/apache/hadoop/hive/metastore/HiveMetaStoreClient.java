@@ -306,10 +306,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       socket = socketFactory.createSocket();
       socket.setKeepAlive(true);
 
-      UserGroupInformation loginUser = UserGroupInformation.getLoginUser();
-      if (loginUser != null && loginUser.hasKerberosCredentials()) {
-        String host = SecurityUtil.getHostFromPrincipal(loginUser.getUserName());
-        InetAddress localAddr = NetUtils.getLocalInetAddress(host);
+      String hiveHost = conf.getVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST);
+      if (hiveHost.isEmpty()) {
+        UserGroupInformation loginUser = UserGroupInformation.getLoginUser();
+        if (loginUser != null && loginUser.hasKerberosCredentials()) {
+          hiveHost = SecurityUtil.getHostFromPrincipal(loginUser.getUserName());
+        }
+      }
+
+      if (!hiveHost.isEmpty()) {
+        InetAddress localAddr = NetUtils.getLocalInetAddress(hiveHost);
         if (localAddr != null) {
           socket.bind(new InetSocketAddress(localAddr, 0));
         }
