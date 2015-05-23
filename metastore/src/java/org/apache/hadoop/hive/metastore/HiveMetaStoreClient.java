@@ -329,7 +329,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
               socket = tsocket.getSocket();
               InetAddress localAddr = NetUtils.getLocalInetAddress(hiveHost);
               if (localAddr != null)
-                socket.bind(new InetSocketAddress(localAddr), 0);
+                socket.bind(new InetSocketAddress(localAddr, 0));
             }
             transport = tsocket;
           } catch (IOException ioe) {
