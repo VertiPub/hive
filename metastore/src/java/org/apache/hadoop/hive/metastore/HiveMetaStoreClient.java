@@ -302,22 +302,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
     SocketFactory socketFactory = SocketFactory.getDefault();
     Socket socket = null;
+    String hiveHost;
     try {
       socket = socketFactory.createSocket();
       socket.setKeepAlive(true);
 
-      String hiveHost = conf.getVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST);
+      hiveHost = conf.getVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST);
       if (hiveHost.isEmpty()) {
         UserGroupInformation loginUser = UserGroupInformation.getLoginUser();
         if (loginUser != null && loginUser.hasKerberosCredentials()) {
           hiveHost = SecurityUtil.getHostFromPrincipal(loginUser.getUserName());
-        }
-      }
-
-      if (!hiveHost.isEmpty()) {
-        InetAddress localAddr = NetUtils.getLocalInetAddress(hiveHost);
-        if (localAddr != null) {
-          socket.bind(new InetSocketAddress(localAddr, 0));
         }
       }
     } catch (IOException ioe) {
@@ -330,13 +324,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         LOG.info("Trying to connect to metastore with URI " + store);
         try {
           try {
-            InetSocketAddress server = new InetSocketAddress(store.getHost(), store.getPort());
-            NetUtils.connect(socket, server, 1000 * clientSocketTimeout);
-            transport = new TSocket(socket);
-          } catch (TTransportException e) {
-              LOG.error("Couldn't create client transport to HiveMetastore(" 
-                + store.getHost() + ":" + store.getPort() + ")", e);
-              throw new MetaException(e.toString());
+            TSocket tsocket = new TSocket(store.getHost(), store.getPort(), 1000 * clientSocketTimeout);
+            if (!hiveHost.isEmpty())  {
+              socket = tsocket.getSocket();
+              InetAddress localAddr = NetUtils.getLocalInetAddress(hiveHost);
+              if (localAddr != null)
+                socket.bind(new InetSocketAddress(localAddr), 0);
+            }
+            transport = tsocket;
           } catch (IOException ioe) {
               LOG.error("Couldn't create client transport to HiveMetastore(" 
                 + store.getHost() + ":" + store.getPort() + ")", ioe);
