@@ -302,17 +302,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
     SocketFactory socketFactory = SocketFactory.getDefault();
     Socket socket = null;
-    String hiveHost;
+    String hiveHost = null;
     try {
       socket = socketFactory.createSocket();
       socket.setKeepAlive(true);
 
-      hiveHost = conf.getVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST);
-      if (hiveHost.isEmpty()) {
-        UserGroupInformation loginUser = UserGroupInformation.getLoginUser();
-        if (loginUser != null && loginUser.hasKerberosCredentials()) {
-          hiveHost = SecurityUtil.getHostFromPrincipal(loginUser.getUserName());
-        }
+      UserGroupInformation loginUser = UserGroupInformation.getLoginUser();
+      if (loginUser != null && loginUser.hasKerberosCredentials()) {
+        hiveHost = SecurityUtil.getHostFromPrincipal(loginUser.getUserName());
       }
     } catch (IOException ioe) {
        LOG.error("Couldn't create client transport", ioe);
@@ -325,7 +322,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         try {
           try {
             TSocket tsocket = new TSocket(store.getHost(), store.getPort(), 1000 * clientSocketTimeout);
-            if (!hiveHost.isEmpty())  {
+            if (hiveHost != null && !hiveHost.isEmpty())  {
               socket = tsocket.getSocket();
               InetAddress localAddr = NetUtils.getLocalInetAddress(hiveHost);
               if (localAddr != null)
