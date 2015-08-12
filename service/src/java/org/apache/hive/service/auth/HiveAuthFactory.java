@@ -139,6 +139,26 @@ public class HiveAuthFactory {
     return transportFactory;
   }
 
+  /**
+   * Returns an authentication factory for HiveServer2 running
+   * that verifies the ID/PASSWORD using custom class over SSL with Kerberos
+   * @return
+   * @throws LoginException
+   */
+  public TTransportFactory getAuthPlainTransFactory() throws LoginException {
+    TTransportFactory transportFactory;
+    if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
+      try {
+        transportFactory = saslServer.createPlainTransportFactory(getSaslProperties());
+      } catch (TTransportException e) {
+        throw new LoginException(e.getMessage());
+      }
+    } else {
+      throw new LoginException("Unsupported authentication type " + authTypeStr);
+    }
+    return transportFactory;
+  }
+
   public TProcessorFactory getAuthProcFactory(ThriftCLIService service)
       throws LoginException {
     if (transportMode.equalsIgnoreCase("http")) {
