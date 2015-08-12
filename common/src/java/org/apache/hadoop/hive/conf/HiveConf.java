@@ -1017,6 +1017,15 @@ public class HiveConf extends Configuration {
     HIVE_COMPAT("hive.compat", HiveCompat.DEFAULT_COMPAT_LEVEL),
     HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ("hive.convert.join.bucket.mapjoin.tez", false),
 
+    // kerberos custom class
+    HIVE_SERVER2_KERBEROS_USE_SSL("hive.server2.kerberos.use.SSL", false),
+    HIVE_SERVER2_KERBEROS_SSL_PORT("hive.server2.kerberos.ssl.port", 10010),
+    HIVE_SERVER2_KERBEROS_SSL_KEYSTORE_PATH("hive.server2.kerberos.ssl.keystore.path", ""),
+    HIVE_SERVER2_KERBEROS_SSL_KEYSTORE_PASSWORD("hive.server2.kerberos.ssl.keystore.password", ""),
+    HIVE_SERVER2_KERBEROS_SSL_MIN_WORKER_THREADS("hive.server2.kerberos.ssl.min.worker.threads", 5),
+    HIVE_SERVER2_KERBEROS_SSL_MAX_WORKER_THREADS("hive.server2.kerberos.ssl.max.worker.threads", 500),
+    HIVE_SERVER2_KERBEROS_SSL_CUSTOM_AUTHENTICATION_CLASS("hive.server2.kerberos.ssl.custom.authentication.class", null),
+
     // Check if a plan contains a Cross Product.
     // If there is one, output a warning to the Session's console.
     HIVE_CHECK_CROSS_PRODUCT("hive.exec.check.crossproducts", true),
