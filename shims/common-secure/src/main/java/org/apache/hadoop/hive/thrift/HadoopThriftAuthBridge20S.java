@@ -273,8 +273,8 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
         "hive.cluster.delegation.token.store.zookeeper.acl";
     public static final String DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT =
         "/hive/cluster/delegation";
-    public static final String HIVE_SERVER2_KERBEROS_SSL_CUSTOM_AUTHENTICATION_CLASS =
-        "hive.server2.kerberos.ssl.custom.authentication.class";
+    public static final String HIVE_SERVER2_KERBEROS_CUSTOM_AUTH_CLASS =
+        "hive.server2.kerberos.custom.authentication.class";
 
     public Server() throws TTransportException {
       try {
@@ -518,16 +518,16 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
       return remoteUser.get();
     }
 
-    /** CallbackHandler for Server Custom class over SSL with Kerberos */
+    /** CallbackHandler for Server Custom authentication class with Kerberos */
     // The client mechanism uses PLAIN on SASL API with Kerberos.
     // Therefore, it has the similar format with PlainServerCallbackHandler.
     static class SaslCustomServerCallbackHandler implements CallbackHandler {
       private KrbCustomAuthenticationProvider customProvider;
 
       public SaslCustomServerCallbackHandler(Configuration conf) {
-        // Default custom class : It only allows CUSTOM authentication over SSL with Kerberos cluster
+        // Default custom class : It only allows CUSTOM authentication with Kerberos cluster
         String customClassName = conf.get(
-          HIVE_SERVER2_KERBEROS_SSL_CUSTOM_AUTHENTICATION_CLASS,
+          HIVE_SERVER2_KERBEROS_CUSTOM_AUTH_CLASS,
           "org.apache.hadoop.hive.thrift.DefaultKrbCustomAuthenticationProviderImpl");
 
         try {

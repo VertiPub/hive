@@ -6,8 +6,8 @@ public class DefaultKrbCustomAuthenticationProviderImpl implements KrbCustomAuth
 
   /**
    * This class will be called when you set 
-   * hive.server2.authentication=KERBEROS and hive.server2.kerberos.use.SSL = true 
-   * with hive.server2.kerberos.ssl.custom.authentication.class=<class name> on hive-site.xml
+   * hive.server2.authentication=KERBEROS and hive.server2.kerberos.custom.authentication.used = true
+   * with hive.server2.kerberos.custom.authentication.class=<class name> on hive-site.xml
    **/
   @Override
   public void Authenticate(String user, String password) throws AuthenticationException {

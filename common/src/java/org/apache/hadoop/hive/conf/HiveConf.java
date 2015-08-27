@@ -1018,13 +1018,14 @@ public class HiveConf extends Configuration {
     HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ("hive.convert.join.bucket.mapjoin.tez", false),
 
     // kerberos custom class
-    HIVE_SERVER2_KERBEROS_USE_SSL("hive.server2.kerberos.use.SSL", false),
-    HIVE_SERVER2_KERBEROS_SSL_PORT("hive.server2.kerberos.ssl.port", 10010),
-    HIVE_SERVER2_KERBEROS_SSL_KEYSTORE_PATH("hive.server2.kerberos.ssl.keystore.path", ""),
-    HIVE_SERVER2_KERBEROS_SSL_KEYSTORE_PASSWORD("hive.server2.kerberos.ssl.keystore.password", ""),
-    HIVE_SERVER2_KERBEROS_SSL_MIN_WORKER_THREADS("hive.server2.kerberos.ssl.min.worker.threads", 5),
-    HIVE_SERVER2_KERBEROS_SSL_MAX_WORKER_THREADS("hive.server2.kerberos.ssl.max.worker.threads", 500),
-    HIVE_SERVER2_KERBEROS_SSL_CUSTOM_AUTHENTICATION_CLASS("hive.server2.kerberos.ssl.custom.authentication.class", null),
+    HIVE_SERVER2_KERBEROS_CUSTOM_AUTH_USED("hive.server2.kerberos.custom.authentication.used", false),
+    HIVE_SERVER2_KERBEROS_CUSTOM_AUTH_CLASS("hive.server2.kerberos.custom.authentication.class", null),
+    HIVE_SERVER2_KERBEROS_CUSTOM_AUTH_PORT("hive.server2.kerberos.custom.authentication.port", 10010),
+    HIVE_SERVER2_KERBEROS_CUSTOM_AUTH_MIN_WORKER_THREADS("hive.server2.kerberos.custom.authentication.min.worker.threads", 5),
+    HIVE_SERVER2_KERBEROS_CUSTOM_AUTH_MAX_WORKER_THREADS("hive.server2.kerberos.custom.authentication.max.worker.threads", 500),
+    HIVE_SERVER2_KERBEROS_CUSTOM_AUTH_SSL_USED("hive.server2.kerberos.custom.authentication.SSL.used", false),
+    HIVE_SERVER2_KERBEROS_CUSTOM_AUTH_SSL_KEYSTORE_PATH("hive.server2.kerberos.custom.authentication.ssl.keystore.path", ""),
+    HIVE_SERVER2_KERBEROS_CUSTOM_AUTH_SSL_KEYSTORE_PASSWORD("hive.server2.kerberos.custom.authentication.ssl.keystore.password", ""),
 
     // Check if a plan contains a Cross Product.
     // If there is one, output a warning to the Session's console.
